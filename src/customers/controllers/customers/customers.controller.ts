@@ -9,6 +9,8 @@ import {
   Post,
   Req,
   Res,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CreateCustomerDto } from 'src/customers/dtos/CreateCustomer.dto';
@@ -48,6 +50,7 @@ export class CustomersController {
   }
 
   @Post('create')
+  @UsePipes(ValidationPipe)
   createCustomer(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customersService.createCustomer(createCustomerDto);
   }
