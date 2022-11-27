@@ -1,5 +1,7 @@
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Request, Response } from 'express';
+import { PaymentsService } from 'src/payments/services/payments/payments.service';
 import { PaymentsController } from './payments.controller';
 
 const makeMock = () => {
@@ -23,17 +25,33 @@ const makeMock = () => {
 
 describe('PaymentsController', () => {
   let controller: PaymentsController;
+  let service: PaymentsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PaymentsController],
+      providers: [
+        {
+          provide: 'PAYMENT_SERVICE',
+          useValue: {
+            createPayment: jest.fn((x) => ({
+              status: 'success',
+            })),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<PaymentsController>(PaymentsController);
+    service = module.get<PaymentsService>('PAYMENT_SERVICE');
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('paymentsService should be defined', () => {
+    expect(service).toBeDefined();
   });
 
   describe('getPayments', () => {
@@ -78,6 +96,27 @@ describe('PaymentsController', () => {
       };
       controller.getPayments(requestMock, responseMock);
       expect(responseMock.send).toHaveBeenCalledWith(200);
+    });
+  });
+
+  describe('createPayment', () => {
+    it('should return a success response', async () => {
+      const output = await controller.createPayment({
+        email: 'email',
+        price: 100,
+      });
+      expect(output).toStrictEqual({ status: 'success' });
+    });
+
+    it('should throw a error', async () => {
+      jest.spyOn(service, 'createPayment').mockImplementationOnce(() => {
+        throw new BadRequestException();
+      });
+      const outputPromise = controller.createPayment({
+        email: 'email',
+        price: 100,
+      });
+      expect(outputPromise).rejects.toThrow(new BadRequestException());
     });
   });
 });
