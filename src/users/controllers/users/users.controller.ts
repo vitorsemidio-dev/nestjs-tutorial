@@ -12,11 +12,12 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { plainToClass } from 'class-transformer';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { UserNotFoundException } from 'src/users/exceptions/UserNotFound.exception';
 import { HttpExceptionFilter } from 'src/users/filters/HttpException.filter';
 import { UsersService } from 'src/users/services/users/users.service';
-import { SerializedUser } from 'src/users/types';
+import { SerializedUserDto } from 'src/users/dtos/SerializedUserDto';
 
 @Controller('users')
 export class UsersController {
@@ -25,40 +26,48 @@ export class UsersController {
   ) {}
 
   @Get('')
-  getUsers() {
-    return this.usersService.findUsers();
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getUsers(): Promise<SerializedUserDto[]> {
+    const users = await this.usersService.findUsers();
+    return users.map((user) => plainToClass(SerializedUserDto, user));
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
-  @Get('username/:username')
-  getUserByUsername(@Param('username') username: string) {
-    const user = this.usersService.findUserByUsername(username);
-
-    if (user) {
-      return new SerializedUser(user);
-    } else {
-      throw new UserNotFoundException();
-    }
-  }
-
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get('id/:id')
   @UseFilters(HttpExceptionFilter)
-  getUserById(@Param('id', ParseIntPipe) id: number) {
-    const user = this.usersService.findUserById(id);
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getUserById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SerializedUserDto> {
+    const user = await this.usersService.findUserById(id);
 
     if (user) {
-      return new SerializedUser(user);
+      return new SerializedUserDto(user);
     } else {
       throw new UserNotFoundException();
     }
   }
 
+  @Get('username/:username')
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getUserByUsername(
+    @Param('username') username: string,
+  ): Promise<SerializedUserDto> {
+    const user = await this.usersService.findUserByUsername(username);
+
+    if (user) {
+      return new SerializedUserDto(user);
+    } else {
+      throw new UserNotFoundException();
+    }
+  }
+
+  @Post('create')
   @UseInterceptors(ClassSerializerInterceptor)
   @UsePipes(ValidationPipe)
-  @Post('create')
-  async createUser(@Body() createUserDto: CreateUserDto) {
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<SerializedUserDto> {
     const user = await this.usersService.createUser(createUserDto);
-    return new SerializedUser(user);
+    return new SerializedUserDto(user);
   }
 }

@@ -1,36 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { plainToClass } from 'class-transformer';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
-import { User as UserEntity } from 'src/users/entities/User.entity';
+import { User } from 'src/users/entities/User.entity';
 import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
-import { SerializedUser, User as UserType } from 'src/users/types';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
   ) {}
-
-  private users: UserType[] = [
-    {
-      id: 1,
-      username: 'shane',
-      password: 'shane',
-    },
-    {
-      id: 2,
-      username: 'don',
-      password: 'don',
-    },
-    {
-      id: 3,
-      username: 'gussie',
-      password: 'gussie',
-    },
-  ];
 
   async createUser(createUserDto: CreateUserDto) {
     const userAlreadyExists = await this.findUserByEmail(createUserDto.email);
@@ -44,10 +24,6 @@ export class UsersService {
     return userSaved;
   }
 
-  findUsers() {
-    return this.users.map((user) => plainToClass(SerializedUser, user));
-  }
-
   async findUserByEmail(email: string) {
     const user = await this.usersRepository.findOne({
       where: { email },
@@ -55,11 +31,22 @@ export class UsersService {
     return user;
   }
 
-  findUserByUsername(username: string) {
-    return this.users.find((user) => user.username === username);
+  async findUserByUsername(username: string) {
+    const user = await this.usersRepository.findOne({
+      where: { username },
+    });
+    return user;
   }
 
-  findUserById(id: number) {
-    return this.users.find((user) => user.id === id);
+  async findUserById(id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
+    return user;
+  }
+
+  async findUsers() {
+    const users = await this.usersRepository.find();
+    return users;
   }
 }
