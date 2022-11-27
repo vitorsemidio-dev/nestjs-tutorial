@@ -1,13 +1,18 @@
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
-import { UsersController } from './controllers/users/users.controller';
-import { UsersService } from './services/users/users.service';
-import { User } from './entities/User.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersController } from 'src/users/controllers/users/users.controller';
+import { User } from 'src/users/entities/User.entity';
+import { HashService } from 'src/users/services/hash/hash.service';
+import { UsersService } from 'src/users/services/users/users.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [
+    {
+      provide: 'HASH_SERVICE',
+      useClass: HashService,
+    },
     {
       provide: 'USER_SERVICE',
       useClass: UsersService,
