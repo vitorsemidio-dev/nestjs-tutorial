@@ -3,9 +3,16 @@ import { AuthModule } from 'src/auth/auth.module';
 import { CustomersModule } from 'src/customers/customers.module';
 import { DatabaseModule } from 'src/database/database.module';
 import { UsersModule } from 'src/users/users.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
-  imports: [DatabaseModule, CustomersModule, UsersModule, AuthModule],
+  imports: [
+    AuthModule,
+    CustomersModule,
+    DatabaseModule,
+    PaymentsModule,
+    UsersModule,
+  ],
   controllers: [],
   providers: [],
 })
