@@ -210,4 +210,38 @@ describe('UsersService', () => {
       });
     });
   });
+
+  describe('findUserById', () => {
+    const makeIdInput = () => {
+      const id = 1234;
+      return { id };
+    };
+    it('should return user if id exists', async () => {
+      const { user2 } = makeSut();
+      const { id } = user2;
+      const output = await usersService.findUserById(id);
+      expect(output).toBeDefined();
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { id },
+      });
+      expect(output).toMatchObject(user2);
+    });
+
+    it('should return "null" if id not exists', async () => {
+      const { id } = makeIdInput();
+      const output = await usersService.findUserById(id);
+      expect(output).toBeNull();
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { id },
+      });
+    });
+
+    it('should call the methods with correct values', async () => {
+      const { id } = makeIdInput();
+      await usersService.findUserById(id);
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { id },
+      });
+    });
+  });
 });
