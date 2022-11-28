@@ -134,4 +134,50 @@ describe('UsersService', () => {
       await expect(output).rejects.toThrow(UserEmailAlreadyExits);
     });
   });
+
+  describe('findUserByEmail', () => {
+    const makeInputEmail = () => {
+      const email = 'dimluip@mowan.nu';
+      return { email };
+    };
+    it('should return user if email exists', async () => {
+      const { email } = makeInputEmail();
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce({
+        id: 1,
+        email: email,
+        username: 'dimluip',
+        password: '12345678hashed',
+      });
+      const output = await usersService.findUserByEmail(email);
+      expect(output).toBeDefined();
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { email },
+      });
+      expect(output).toMatchObject({
+        id: 1,
+        email,
+        username: 'dimluip',
+        password: '12345678hashed',
+      });
+    });
+
+    it('should return "null" if email not exists', async () => {
+      const { email } = makeInputEmail();
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
+      const output = await usersService.findUserByEmail(email);
+      expect(output).toBeNull();
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { email },
+      });
+    });
+
+    it('should call the methods with correct values', async () => {
+      const { email } = makeInputEmail();
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
+      await usersService.findUserByEmail(email);
+      expect(usersRepository.findOne).toHaveBeenCalledWith({
+        where: { email },
+      });
+    });
+  });
 });
