@@ -244,4 +244,28 @@ describe('UsersService', () => {
       });
     });
   });
+
+  describe('findUsers', () => {
+    it('should return users from db', async () => {
+      const { user1, user2 } = makeSut();
+      const output = await usersService.findUsers();
+      expect(output).toBeDefined();
+      expect(usersRepository.find).toHaveBeenCalledWith();
+      expect(output).toMatchObject([user1, user2]);
+    });
+
+    it('should return users from db when new user was created', async () => {
+      const input: CreateUserDto = {
+        email: 'laizhe@pu.sx',
+        password: '12345678',
+        username: 'laizhe',
+      };
+      const { user1, user2 } = makeSut();
+      const userCreated = await usersService.createUser(input);
+      const output = await usersService.findUsers();
+      expect(output).toBeDefined();
+      expect(usersRepository.find).toHaveBeenCalledWith();
+      expect(output).toMatchObject([user1, user2, userCreated]);
+    });
+  });
 });
