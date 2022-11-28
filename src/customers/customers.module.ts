@@ -12,7 +12,7 @@ import { CustomersService } from './services/customers/customers.service';
 
 @Module({
   controllers: [CustomersController],
-  providers: [CustomersService],
+  providers: [{ provide: 'CUSTOMERS_SERVICE', useClass: CustomersService }],
 })
 export class CustomersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

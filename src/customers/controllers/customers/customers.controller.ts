@@ -4,6 +4,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Inject,
   Param,
   ParseIntPipe,
   Post,
@@ -18,7 +19,10 @@ import { CustomersService } from 'src/customers/services/customers/customers.ser
 
 @Controller('customers')
 export class CustomersController {
-  constructor(private readonly customersService: CustomersService) {}
+  constructor(
+    @Inject('CUSTOMERS_SERVICE')
+    private readonly customersService: CustomersService,
+  ) {}
 
   @Get('')
   getCustomers() {
