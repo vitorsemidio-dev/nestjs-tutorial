@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
-import { User } from 'src/users/entities/User.entity';
-import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
-import { HashService } from 'src/users/services/hash/hash.service';
 import { Repository } from 'typeorm';
+import { HashService } from '../hash/hash.service';
+import { CreateUserDto } from './../../dtos/CreateUser.dto';
+import { User } from '../../entities/User.entity';
+import { UserEmailAlreadyExits } from './../../exceptions/UserEmailAlreadyExists.exception';
 
 @Injectable()
 export class UsersService {
