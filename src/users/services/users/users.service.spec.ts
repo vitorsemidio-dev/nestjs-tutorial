@@ -1,13 +1,14 @@
+import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { appDataSource } from 'src/test/test.utils';
+import { usersFixture } from 'src/test/users.fixture';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { User } from 'src/users/entities/User.entity';
 import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
 import { HashService } from 'src/users/services/hash/hash.service';
 import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
-import { usersFixture } from 'src/test/users.fixture';
 
 const USER_REPOSITORY_TOKEN = getRepositoryToken(User);
 const HASH_SERVICE_TOKEN = 'HASH_SERVICE';
@@ -23,6 +24,17 @@ const makeSut = () => {
     user1,
     user2,
   };
+};
+
+const createUserDtoFactory = (quantity = 1) => {
+  const entitiesGenerated: CreateUserDto[] = Array.from({
+    length: quantity,
+  }).map(() => ({
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    username: faker.internet.userName(),
+  }));
+  return entitiesGenerated;
 };
 
 describe('UsersService', () => {
@@ -86,11 +98,7 @@ describe('UsersService', () => {
 
   describe('createUser', () => {
     const makeInputDto = () => {
-      const input: CreateUserDto = {
-        email: 'laizhe@pu.sx',
-        password: '12345678',
-        username: 'laizhe',
-      };
+      const [input] = createUserDtoFactory();
       return { input };
     };
     it('should create a new user with encoded password', async () => {
@@ -98,7 +106,7 @@ describe('UsersService', () => {
       await usersService.createUser(input);
       expect(usersRepository.create).toHaveBeenCalledWith({
         ...input,
-        password: '12345678hashed',
+        password: hashFnMock(input.password),
       });
     });
 
@@ -141,7 +149,8 @@ describe('UsersService', () => {
 
   describe('findUserByEmail', () => {
     const makeInputEmail = () => {
-      const email = 'dimluip@mowan.nu';
+      const [input] = createUserDtoFactory();
+      const { email } = input;
       return { email };
     };
     it('should return user if email exists', async () => {
@@ -175,7 +184,8 @@ describe('UsersService', () => {
 
   describe('findUserByUsername', () => {
     const makeInputUsername = () => {
-      const username = 'dimluip@mowan.nu';
+      const [input] = createUserDtoFactory();
+      const { username } = input;
       return { username };
     };
     it('should return user if username exists', async () => {
