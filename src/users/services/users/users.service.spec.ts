@@ -7,6 +7,7 @@ import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExis
 import { HashService } from 'src/users/services/hash/hash.service';
 import { Repository } from 'typeorm';
 import { UsersService } from './users.service';
+import { usersFixture } from 'src/test/users.fixture';
 
 const USER_REPOSITORY_TOKEN = getRepositoryToken(User);
 const HASH_SERVICE_TOKEN = 'HASH_SERVICE';
@@ -14,18 +15,10 @@ const HASH_SERVICE_TOKEN = 'HASH_SERVICE';
 const hashFnMock = (payload: string) => `${payload}hashed`;
 
 const makeSut = () => {
-  const user1: User = {
-    id: 1,
-    email: 'faitmo@lilel.it',
-    password: '12345678hashed',
-    username: 'faitmo',
-  };
-  const user2 = {
-    id: 2,
-    email: 'datnuico@suvvejone.ne',
-    password: '12345678hashed',
-    username: 'datnuico',
-  };
+  const [user1, user2] = usersFixture.map((user) => ({
+    ...user,
+    password: hashFnMock(user.password),
+  }));
   return {
     user1,
     user2,
