@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { randomInt } from 'crypto';
+import { appDataSource } from 'src/test/test.utils';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { User } from 'src/users/entities/User.entity';
 import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
@@ -38,25 +38,22 @@ describe('UsersService', () => {
   let hashService: HashService;
 
   beforeEach(async () => {
+    await appDataSource.initialize();
     const { user1, user2 } = makeSut();
     const userDb: User[] = [user1, user2];
+    const usersRepositoryStub = appDataSource.getRepository(User);
+    await usersRepositoryStub.save(userDb);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: USER_REPOSITORY_TOKEN,
           useValue: {
-            create: jest.fn((x) => ({ ...x, id: randomInt(1000) })),
-            find: jest.fn(() => userDb),
-            findOne: jest.fn((x) => {
-              const key = Object.keys(x.where)[0];
-              const value = x.where[key];
-              return userDb.find((user) => user[key] === value) || null;
-            }),
-            save: jest.fn((x) => {
-              userDb.push(x);
-              return x;
-            }),
+            create: jest.fn((x) => usersRepositoryStub.create(x)),
+            find: jest.fn(async () => usersRepositoryStub.find()),
+            findOne: jest.fn(async (x) => usersRepositoryStub.findOne(x)),
+            save: jest.fn(async (x) => usersRepositoryStub.save(x)),
           },
         },
         {
@@ -72,6 +69,12 @@ describe('UsersService', () => {
     usersService = module.get<UsersService>(UsersService);
     usersRepository = module.get<Repository<User>>(USER_REPOSITORY_TOKEN);
     hashService = module.get<HashService>(HASH_SERVICE_TOKEN);
+  });
+
+  afterEach(async () => {
+    if (appDataSource) {
+      await appDataSource.destroy();
+    }
   });
 
   describe('dependencies should be defined', () => {
