@@ -79,7 +79,10 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/controllers/**/*.(t|j)s",
+      "**/middlewares/**/*.(t|j)s",
+      "**/services/**/*.(t|j)s",
+      "**/utils/**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "modulePaths": [
