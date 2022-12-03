@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { appDataSource } from 'src/test/test.utils';
-import { usersFixture } from 'src/test/users.fixture';
+import { createUserDtoManyFactory, usersFixture } from 'src/test/users.fixture';
 import { UsersController } from 'src/users/controllers/users/users.controller';
+import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { User } from 'src/users/entities/User.entity';
+import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
 import { UserNotFoundException } from 'src/users/exceptions/UserNotFound.exception';
 import { HashService } from 'src/users/services/hash/hash.service';
 import { UsersService } from 'src/users/services/users/users.service';
@@ -25,6 +27,12 @@ const makeSut = () => {
     user2,
   };
 };
+
+const createUserDtoFactorySut = (quantity = 1) => {
+  const entitiesGenerated: CreateUserDto[] = createUserDtoManyFactory(quantity);
+  return entitiesGenerated;
+};
+
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: UsersService;
@@ -180,6 +188,41 @@ describe('UsersController', () => {
         .execute();
       const output = controller.getUserByUsername(usersFromDb.username);
       expect(output).rejects.toThrow(UserNotFoundException);
+    });
+  });
+
+  describe('createUser', () => {
+    it('should create user correctly', async () => {
+      const [input] = createUserDtoFactorySut();
+      const expectedFieldsValues = [
+        { field: 'email', value: input.email },
+        { field: 'username', value: input.username },
+      ];
+      const output = await controller.createUser(input);
+      expectedFieldsValues.forEach((expected) => {
+        expect(output[expected.field]).toEqual(expected.value);
+      });
+    });
+
+    it('should create user and encrypt password before save in database', async () => {
+      const [input] = createUserDtoFactorySut();
+      const expected = input.password;
+      const output = await controller.createUser(input);
+      expect(output).not.toEqual(expected);
+    });
+
+    it(`should return field 'password'`, async () => {
+      const [input] = createUserDtoFactorySut();
+      const expected = true;
+      const output = await controller.createUser(input);
+      expect(!!output.password).toEqual(expected);
+    });
+
+    it(`should throw ${UserEmailAlreadyExits.name}`, async () => {
+      const [input] = createUserDtoFactorySut();
+      await controller.createUser(input);
+      const output = controller.createUser(input);
+      await expect(output).rejects.toThrow(UserEmailAlreadyExits);
     });
   });
 });

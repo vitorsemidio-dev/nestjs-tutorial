@@ -1,8 +1,7 @@
-import { faker } from '@faker-js/faker';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { appDataSource } from 'src/test/test.utils';
-import { usersFixture } from 'src/test/users.fixture';
+import { createUserDtoManyFactory, usersFixture } from 'src/test/users.fixture';
 import { CreateUserDto } from 'src/users/dtos/CreateUser.dto';
 import { User } from 'src/users/entities/User.entity';
 import { UserEmailAlreadyExits } from 'src/users/exceptions/UserEmailAlreadyExists.exception';
@@ -26,16 +25,14 @@ const makeSut = () => {
   };
 };
 
-const createUserDtoFactory = (quantity = 1) => {
-  const entitiesGenerated: CreateUserDto[] = Array.from({
-    length: quantity,
-  }).map(() => ({
-    email: faker.internet.email(),
-    password: faker.internet.password(),
-    username: faker.internet.userName(),
-  }));
+const createUserDtoFactorySut = (quantity = 1) => {
+  const entitiesGenerated: CreateUserDto[] = createUserDtoManyFactory(quantity);
   return entitiesGenerated;
 };
+
+function sortBy<T = unknown>(field: string): (a: T, b: T) => number {
+  return (a: T, b: T) => a[field] - b[field];
+}
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -98,7 +95,7 @@ describe('UsersService', () => {
 
   describe('createUser', () => {
     const makeInputDto = () => {
-      const [input] = createUserDtoFactory();
+      const [input] = createUserDtoFactorySut();
       return { input };
     };
     it('should create a new user with encoded password', async () => {
@@ -149,7 +146,7 @@ describe('UsersService', () => {
 
   describe('findUserByEmail', () => {
     const makeInputEmail = () => {
-      const [input] = createUserDtoFactory();
+      const [input] = createUserDtoFactorySut();
       const { email } = input;
       return { email };
     };
@@ -184,7 +181,7 @@ describe('UsersService', () => {
 
   describe('findUserByUsername', () => {
     const makeInputUsername = () => {
-      const [input] = createUserDtoFactory();
+      const [input] = createUserDtoFactorySut();
       const { username } = input;
       return { username };
     };
@@ -257,7 +254,10 @@ describe('UsersService', () => {
       const output = await usersService.findUsers();
       expect(output).toBeDefined();
       expect(usersRepository.find).toHaveBeenCalledWith();
-      expect(output).toMatchObject([user1, user2]);
+      const sortById = sortBy<User>('id');
+      expect(output.sort(sortById)).toMatchObject(
+        [user1, user2].sort(sortById),
+      );
     });
 
     it('should return users from db when new user was created', async () => {
@@ -271,7 +271,10 @@ describe('UsersService', () => {
       const output = await usersService.findUsers();
       expect(output).toBeDefined();
       expect(usersRepository.find).toHaveBeenCalledWith();
-      expect(output).toMatchObject([user1, user2, userCreated]);
+      const sortById = sortBy<User>('id');
+      expect(output.sort(sortById)).toMatchObject(
+        [user1, user2, userCreated].sort(sortById),
+      );
     });
   });
 });
