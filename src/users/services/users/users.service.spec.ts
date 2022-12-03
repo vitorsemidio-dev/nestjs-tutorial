@@ -177,6 +177,19 @@ describe('UsersService', () => {
         where: { email },
       });
     });
+
+    it('should validate properties and types user found by email', async () => {
+      const { user1 } = makeSut();
+      const input = user1.email;
+      const expected = {
+        email: expect.any(String),
+        id: expect.any(Number),
+        password: expect.any(String),
+        username: expect.any(String),
+      };
+      const output = await usersService.findUserByEmail(input);
+      expect(output).toEqual(expected);
+    });
   });
 
   describe('findUserByUsername', () => {
@@ -212,6 +225,19 @@ describe('UsersService', () => {
         where: { username },
       });
     });
+
+    it('should validate properties and types user found by username', async () => {
+      const { user1 } = makeSut();
+      const input = user1.username;
+      const expected = {
+        email: expect.any(String),
+        id: expect.any(Number),
+        password: expect.any(String),
+        username: expect.any(String),
+      };
+      const output = await usersService.findUserByUsername(input);
+      expect(output).toEqual(expected);
+    });
   });
 
   describe('findUserById', () => {
@@ -246,6 +272,19 @@ describe('UsersService', () => {
         where: { id },
       });
     });
+
+    it('should validate properties and types user found by id', async () => {
+      const { user1 } = makeSut();
+      const input = user1.id;
+      const expected = {
+        email: expect.any(String),
+        id: expect.any(Number),
+        password: expect.any(String),
+        username: expect.any(String),
+      };
+      const output = await usersService.findUserById(input);
+      expect(output).toEqual(expected);
+    });
   });
 
   describe('findUsers', () => {
@@ -276,5 +315,20 @@ describe('UsersService', () => {
         [user1, user2, userCreated].sort(sortById),
       );
     });
+  });
+
+  it('should validate properties and types users', async () => {
+    const expected = {
+      email: expect.any(String),
+      id: expect.any(Number),
+      password: expect.any(String),
+      username: expect.any(String),
+    };
+    const output = await usersService.findUsers();
+    expect(output).toEqual(
+      expect.arrayContaining(
+        output.map(() => expect.objectContaining(expected)),
+      ),
+    );
   });
 });
