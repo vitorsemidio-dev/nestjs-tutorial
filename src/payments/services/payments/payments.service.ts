@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from '../../dtos/CreatePayment.dto';
+import { CreatePaymentDto } from 'src/payments/dtos/CreatePayment.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -14,8 +14,6 @@ export class PaymentsService {
       email: 'user3@email.com',
     },
   ];
-
-  constructor() {}
 
   async createPayment(createPaymentDto: CreatePaymentDto) {
     const { email } = createPaymentDto;

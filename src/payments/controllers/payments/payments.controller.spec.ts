@@ -102,21 +102,23 @@ describe('PaymentsController', () => {
   describe('createPayment', () => {
     it('should return a success response', async () => {
       const output = await controller.createPayment({
-        email: 'email',
+        email: 'user1@email.com',
         price: 100,
       });
       expect(output).toStrictEqual({ status: 'success' });
     });
 
-    it('should throw a error', async () => {
+    it('should throw BadRequestException if user not found', async () => {
       jest.spyOn(service, 'createPayment').mockImplementationOnce(() => {
-        throw new BadRequestException();
+        throw new BadRequestException('User not found');
       });
       const outputPromise = controller.createPayment({
-        email: 'email',
+        email: 'user1@email.com',
         price: 100,
       });
-      expect(outputPromise).rejects.toThrow(new BadRequestException());
+      expect(outputPromise).rejects.toThrow(
+        new BadRequestException('User not found'),
+      );
     });
   });
 });
