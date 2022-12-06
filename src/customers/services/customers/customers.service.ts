@@ -17,15 +17,16 @@ export class CustomersService {
     },
   ];
 
-  createCustomer(createCustomerDto: CreateCustomerDto) {
+  async createCustomer(createCustomerDto: CreateCustomerDto) {
     this.users.push(createCustomerDto);
+    return createCustomerDto;
   }
 
   findAllCustomers() {
     return this.users;
   }
 
-  findCustomerById(id: number) {
+  async findCustomerById(id: number) {
     return this.users.find((user) => user.id === id);
   }
 }
